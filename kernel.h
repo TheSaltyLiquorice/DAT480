@@ -28,6 +28,10 @@ extern "C"{
             hls::stream<pkt> &out,
 		    unsigned int &hash_out
             );
-}
+};
+
+uint32_t crc_cal(uint32_t* table, char* buf, size_t len);
 
 #endif // __KERNEL_H__ not defined
+
+
