@@ -1,3 +1,4 @@
-983c8d9f
-d7805ede
-f6bbf341
+uint32_t rule_90 [] = {
+0xc3eadc40,
+0x80f55b44,
+};

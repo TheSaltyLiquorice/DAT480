@@ -1,2 +1,5 @@
-1a4292ed
-3ea1d7c5
+uint32_t rule_89 [] = {
+0xe1c7536e,
+0x82e640cd,
+0xdbf6af9,
+};

@@ -1,3 +1,4 @@
-61779218
-34ced78d
-ea173be2
+uint32_t rule_88 [] = {
+0x972ce038,
+0xc0ca6ecb,
+};

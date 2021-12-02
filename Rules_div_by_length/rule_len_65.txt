@@ -1,2 +1,5 @@
-d5ba2b0e
-bf290eac
+uint32_t rule_65 [] = {
+0x9d8e40ea,
+0xef900d68,
+0x3aabba10,
+};

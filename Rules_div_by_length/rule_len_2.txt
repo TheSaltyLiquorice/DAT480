@@ -1,11 +1,13 @@
-7e4acd12
-10b0af99
-6751fc53
-3e1e78cc
-e0c9e09c
-b310c38c
-486e85a5
-aa0bf2cd
-5175b4e4
-49ff2b06
-3488df43
+uint32_t rule_2 [] = {
+0x7e437b5e,
+0xb84614a0,
+0xc77c1c6a,
+0xbc498985,
+0xb74f5bd8,
+0x73591650,
+0x9608161c,
+0x8fb09b5d,
+0xe5a307af,
+0x8bfb0255,
+0x1a6cd7b3,
+};

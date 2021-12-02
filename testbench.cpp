@@ -34,8 +34,7 @@ int main()
   krnl_hash(in,out,hash_out);
 
   out.read(tmp2);
-  cout << "Hash out ";
-  cout << hash_out << endl;
+  printf("Hash out %x\n",hash_out);
   return 0;
 }
 

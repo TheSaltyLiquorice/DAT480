@@ -1,0 +1,5 @@
+uint32_t rule_87 [] = {
+0x1307bbf2,
+0xaf640145,
+0xcd16aba8,
+};

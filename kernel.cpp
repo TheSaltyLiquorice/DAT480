@@ -1,5 +1,7 @@
 #include "./kernel.h"
 #include "./crc_table.h"
+#include "/home/jonathan/Documents/Chalmers/Year5/DAT480/Lab_Project/DAT480/Rules_div_by_length/total_ruleset.h"
+
 void krnl_hash(hls::stream<pkt > &in,
 	     hls::stream<pkt> &out,
 		 unsigned int &hash_out
@@ -13,21 +15,21 @@ void krnl_hash(hls::stream<pkt > &in,
 
 	pkt word;
 	in.read(word);
-	static int i,j,t,h = 0;
+	static int i,j,t,h,k = 0;
 	//different pattern lengths
 	static int lengths[106];
+	#define M 49
 
 	static uint32_t crc;
+
 	static int head;
-	static int p = 0; // hash value for pattern
-	static int q = 101;
 	static char stream_mem[NUM_BYTES];
 	for(i = 0; i<NUM_BYTES; i++){
 		#pragma HLS UNROLL
 		stream_mem[i] = word.data.range(i*8,i*8+7);
 		 //everytime we get a pkt populate the stream_mem
 		#ifndef __SYNTHESIS__
-		std::cout << "tmp = " << stream_mem[i] << std::endl;
+//		std::cout << "tmp = " << stream_mem[i] << std::endl;
 		#endif
 		}
 
@@ -36,15 +38,20 @@ void krnl_hash(hls::stream<pkt > &in,
 			// window of text. When head increments we need to move the window forward
 			for (int i = head; i < head+M; i++){
 				crc = crc_cal(crc_table, &stream_mem[i], M);
+				#ifndef __SYNTHESIS__
+//				printf("hash out = %x\n", crc);
+				#endif
+				for(k = 0; k<26; k++){
+				#pragma HLS UNROLL
+					if(crc == rule_49[k]){
+						hash_out = crc;
+						#ifndef __SYNTHESIS__
+						printf("%x\n",rule_49[k]);
+						printf("Match at index = %d\n",head+M);
+						#endif
+					}
+				}
 			}
-			#ifndef __SYNTHESIS__
-			//printf("Test hash = %x \n", crc);
-			#endif
-			if(crc == 0x4258B67D)
-			{
-				printf("Match Jonathan at index = %d\n",head+M);
-			}
-			hash_out = crc;
 	}
 	out.write(word);
 }

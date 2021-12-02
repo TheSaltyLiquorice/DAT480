@@ -1,4 +1,7 @@
-d1d8e2b7
-544996d8
-543407d0
-a35c9e4
+uint32_t rule_61 [] = {
+0xad6b4b4e,
+0x1bfeacbc,
+0x41b24268,
+0x9989c608,
+0x1f6bfe3,
+};
