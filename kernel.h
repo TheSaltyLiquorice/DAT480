@@ -18,7 +18,8 @@
 #define NUM_BYTES DWIDTH/8
 #define type ap_uint<DWIDTH>
 
-typedef hls::axis<type, 0, 0, 0> pkt;
+//typedef hls::axis<type, 0, 0, 0> pkt;
+typedef ap_axiu<DWIDTH, 96, 1, TDWIDTH> pkt;
 
 //typedef ap_axiu<DWIDTH, 96, 1, TDWIDTH> pkt;
 
