@@ -1,0 +1,13 @@
+f = open(path+"OneDimensionTestArray.h","w+")
+f.write("uint16_t OneDimensionHashes [] = {\n")
+for rule in rules_len_sort:
+  f.write("0x"+rule[1]+",\n")
+f.write("};\n")
+f.close()
+
+used for sorted 1 d array.
+
+for google colab paths
+path = "/content/"
+r_hashed = open("/content/pattern_match_snort3_content_hashed.txt")
+r_length = open("/content/pattern_match_snort3_content_length.txt")
