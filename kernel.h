@@ -14,8 +14,10 @@
 #define DWIDTH 512
 #define TDWIDTH 16
 #define d 256
-
+#define BUFFER_WIDTH 7
+#define SIZE 1408
 #define NUM_BYTES DWIDTH/8
+#define BYTES_PER_BEAT DWIDTH/8
 #define type ap_uint<DWIDTH>
 
 //typedef hls::axis<type, 0, 0, 0> pkt;
@@ -26,8 +28,7 @@ typedef ap_axiu<DWIDTH, 96, 1, TDWIDTH> pkt;
 extern "C"{
 	void krnl_hash(
             hls::stream<pkt> &in,
-            hls::stream<pkt> &out,
-		    unsigned int &hash_out
+            hls::stream<pkt> &out
             );
 };
 
