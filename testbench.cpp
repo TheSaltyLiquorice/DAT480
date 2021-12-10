@@ -6,7 +6,8 @@ int main()
 {
    FILE *fp;
    ap_uint<8> x[22*NUM_BYTES];
-   uint16_t y[NUM_BYTES];
+   uint16_t golden[1000];
+   ap_uint<16> y[NUM_BYTES/2];
    int sz = SIZE;
    int bpb = BYTES_PER_BEAT;
 
@@ -24,8 +25,27 @@ int main()
    }
    fclose(fp);
 
-   for (i=0; i<22*NUM_BYTES; i++){
-	   printf("%c", x[i].to_char());
+
+   fp=fopen("/home/jonathan/Documents/Chalmers/Year5/DAT480/Lab_Project/DAT480/Rules_div_by_length/test_vec_gold.txt","r");
+   if(fp == NULL){
+	   cout << "ERROR OPENING FILE\n";
+	   exit(1);
+
+   }
+   for (i=0; i<500; i++){
+	  uint16_t tmp;
+	  fscanf(fp, "%u", &tmp);
+	  golden[i] = tmp;
+   }
+   fclose(fp);
+
+
+
+
+
+
+   for (i=0; i<500; i++){
+	   printf("%u ", golden[i]);
    }
   hls::stream<pkt> in, out;
   pkt word_in, word_out;
@@ -33,8 +53,8 @@ int main()
 
 
 
-  for (unsigned int l = 0; l < 3; l++) {
-      printf("writing\n");
+  for (unsigned int l = 0; l < sz/bpb; l++) {
+//      printf("writing\n");
       ap_uint<512> res;
       for(int i=0;i<NUM_BYTES;i++)
       {
@@ -55,9 +75,10 @@ int main()
       in.write(word_in);
       krnl_hash(in,out);
       out.read(word_out);
-	for(int i=0;i<512/16;i++)
+	for(int i=0;i<512/12;i++)
 	{
-	 y[i] = word_out.data.range((i*16),(i*16)+15);
+	 y[i] = word_out.data.range((i*12),(i*12)+11);
+	 if(y[i] != 4095)
 	 cout << "Testbench receives idx = " << y[i] << endl;
 	}
 

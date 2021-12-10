@@ -3,6 +3,7 @@
 #include "/home/jonathan/Documents/Chalmers/Year5/DAT480/Lab_Project/DAT480/Rules_div_by_length/lengths.h"
 #include "/home/jonathan/Documents/Chalmers/Year5/DAT480/Lab_Project/DAT480/Rules_div_by_length/total_ruleset.h"
 #include "/home/jonathan/Documents/Chalmers/Year5/DAT480/Lab_Project/DAT480/Rules_div_by_length/rules.h"
+#include "/home/jonathan/Documents/Chalmers/Year5/DAT480/Lab_Project/DAT480/OneDimensionTestArray.h"
 #include "/home/jonathan/Documents/Chalmers/Year5/DAT480/Lab_Project/DAT480/Rules_div_by_length/elements.h"
 
 
@@ -29,14 +30,13 @@ void krnl_hash(hls::stream<pkt > &in,
 	static char stream_mem[BUFFER_WIDTH][NUM_BYTES] = {0}; //buffer for an entire packet
 
 	if (!in.empty()){
-		// Auto-pipeline is going to apply pipeline to this loop
-//		for (unsigned int i = 0; i < (sz / bpb); i++) { //one pkt split into 22 parts
-//		for (unsigned int i = 0; i < 2; i++) { //one pkt split into 22 parts
+
 		in.read(word);
-//
+		//FIFO, moves data in chunks of 64 BYTES
 		for(int h = BUFFER_WIDTH-2; h >= 0; h--){
 			memcpy(stream_mem[h+1],stream_mem[h], NUM_BYTES);
 		}
+		//Assign the word from the stream into memory
 		for(int j = 0; j<NUM_BYTES; j++){
 			#pragma HLS UNROLL
 			stream_mem[0][j] = word.data.range(j*8,j*8+7);
@@ -49,34 +49,37 @@ void krnl_hash(hls::stream<pkt > &in,
 
 
 		static unsigned int count = 0;
-		result.data = -1; //initalize to -1
+		static uint16_t el_count = 0;
+//		static uint16_t curr_max;
+		result.data = -1; //initalize to -1, if -1/INTMAX should be counted as a none match.
 		for(head = 0; head < (NUM_BYTES); head++){
+			el_count = 0;
+//			curr_max = 0;
 				// Calculate the hash value of pattern and first
-				// window of text. When head increments we need to move the window forward
+				// window of text. When head increments we move the window forward 1 Byte
 			static uint16_t idx_len;
 			for(idx_len = 0; idx_len < sizeof(lengths)/sizeof(lengths[0]); idx_len++){
 				uint16_t p_len = lengths[idx_len];
-				#pragma HLS INLINE
 				crc = crc_cal(crc_table, &stream_mem[0][head], p_len);
 				for(k = 0; k<elements[idx_len]; k++){
 				#pragma HLS UNROLL
-					if(crc == rules[idx_len][k]){
-						result.data.range(count*16,count*16+15) = idx_len*sizeof(lengths)/sizeof(lengths[0])+k;
+					if(crc == OneDimensionHashes[el_count+k]){
+						result.data.range(count*12,count*12+11) = el_count+k;
 						#ifndef __SYNTHESIS__
-						printf("kernel says idx: %d\n", idx_len*sizeof(lengths)/sizeof(lengths[0])+k);
-						printf("%x\n",rules[idx_len][k]);
+//						printf("kernel says idx: %d\n", el_count+k);
+//						printf("%x\n",rules[idx_len][k]);
 						#endif
-						if(count < 31){ //this is trash, must find a better solution!
+						if(count < 41){ //this is trash, must find a better solution! (insert priority encoder here. p_len can be used to prioritize
 							count++;
 						}
 						else{
 							#ifndef __SYNTHESIS__
 							std::cout << "Missed matches" << std::endl;
 							#endif
-
 						}
 					}
 				}
+				el_count += elements[idx_len];
 			}
 		}
 

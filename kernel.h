@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <cstdlib>
 #include <stdio.h>
+#include <string.h>
 
 #include "ap_axi_sdata.h"
 #include "ap_int.h"
