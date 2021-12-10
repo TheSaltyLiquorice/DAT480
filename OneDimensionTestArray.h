@@ -1,4 +1,4 @@
-uint16_t OneDimensionHashes [] = {
+uint32_t OneDimensionHashes [] = {
 0xf4dbdf21,
 0x65bfb3b6,
 0x83dcefb7,
