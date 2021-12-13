@@ -5,9 +5,10 @@ using namespace std;
 int main()
 {
    FILE *fp;
-   ap_uint<8> x[22*NUM_BYTES];
-   uint16_t golden[1000];
-   ap_uint<16> y[NUM_BYTES/2];
+//   ap_uint<8> x[22*NUM_BYTES];
+   uint8_t x[100000] = {0};
+   uint16_t golden[1000000] = {0};
+   ap_uint<12> y[NUM_BYTES/2];
    int sz = SIZE;
    int bpb = BYTES_PER_BEAT;
 
@@ -18,10 +19,15 @@ int main()
 	   exit(1);
 
    }
-   for (i=0; i<22*NUM_BYTES; i++){
-	  ap_uint<8> tmp;
+   fseek(fp, 0L, SEEK_END);
+   int sz_f = ftell(fp);
+   fseek(fp, 0L, SEEK_SET);
+
+   for (i=0; i<sz_f; i++){
+	  uint8_t tmp;
 	  fscanf(fp, "%c", &tmp);
 	  x[i] = tmp;
+	  printf("%c ", tmp);
    }
    fclose(fp);
 
@@ -32,58 +38,74 @@ int main()
 	   exit(1);
 
    }
-   for (i=0; i<500; i++){
-	  uint16_t tmp;
-	  fscanf(fp, "%u", &tmp);
-	  golden[i] = tmp;
+   fseek(fp, 0L, SEEK_END);
+   sz_f = ftell(fp);
+   fseek(fp, 0L, SEEK_SET);
+   printf("\n");
+   for (i=0; i<sz_f; i++){
+	  int tmp;
+	  fscanf(fp, "%d", &tmp);
+	  golden[i] = tmp & 0xffff;
+	  printf(" golden = %d\n",golden[i]);
    }
    fclose(fp);
 
 
-
-
-
-
-   for (i=0; i<500; i++){
-	   printf("%u ", golden[i]);
-   }
   hls::stream<pkt> in, out;
   pkt word_in, word_out;
   
 
+  int count = 0;
 
+for(int i = 0; i<100000/sz; i++){
+	for (unsigned int l = 0; l < sz/bpb; l++) {
+	//      printf("writing\n");
+	      ap_uint<512> res;
+	      for(int j=0;j<NUM_BYTES;j++)
+	      {
+	       res.range((j*8),(j*8)+7) = x[i*sz+NUM_BYTES*l+j];
+	      }
 
-  for (unsigned int l = 0; l < sz/bpb; l++) {
-//      printf("writing\n");
-      ap_uint<512> res;
-      for(int i=0;i<NUM_BYTES;i++)
-      {
-       res.range((i*8),(i*8)+7) = x[NUM_BYTES*l+i];
-      }
+	      word_in.data = res;
+	      word_in.keep = -1;
 
-      word_in.data = res;
-      word_in.keep = -1;
+	      // set last signals when last piece of data or
+	      // multiple of 1408 bytes, packetize the payload
+	      if ((((sz/bpb) - 1)==l) || ((((l + 1) * bpb) % sz) == 0))
+	        word_in.last = 1;
+	      else
+	        word_in.last = 0;
 
-      // set last signals when last piece of data or
-      // multiple of 1408 bytes, packetize the payload
-      if ((((sz/bpb) - 1)==l) || ((((l + 1) * bpb) % sz) == 0))
-        word_in.last = 1;
-      else
-        word_in.last = 0;
+	      word_in.dest = 0; //not sure if i need to set this in the tb
+	      in.write(word_in);
+	      krnl_hash(in,out);
+	      out.read(word_out);
+		for(int j=0;j<512/12;j++)
+		{
+		ap_uint<12> result = word_out.data.range((j*12),(j*12)+11);
+			if(result != 4095){
+				y[count] = result;
+				count++;
+//				cout << "Testbench receives idx = " << result << endl;
+			}
+		}
 
-      word_in.dest = 0; //not sure if i need to set this in the tb
-      in.write(word_in);
-      krnl_hash(in,out);
-      out.read(word_out);
-	for(int i=0;i<512/12;i++)
-	{
-	 y[i] = word_out.data.range((i*12),(i*12)+11);
-	 if(y[i] != 4095)
-	 cout << "Testbench receives idx = " << y[i] << endl;
 	}
+}
 
-    }
+printf("------------------------------------\n");
+  for(int i = 0; i<10; i++){
+//	  cout << "y = " << y[i+1];
+	  printf(" golden = %d\n",golden[i]);
+//	 cout << "y = " << y[i+1] << "x = " << x[i] << endl;
+//	 if(y[i+1] != x[i]){
+//		 cout << "TB failed\n";
+//		 return 0;
+//	 }
+  }
+
+
   printf("Reached end of tb\n");
-  return 0;
+  return 1;
 }
 
