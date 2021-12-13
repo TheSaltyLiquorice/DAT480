@@ -27,7 +27,7 @@ void krnl_hash(hls::stream<pkt > &in,
 	//different pattern lengths
 	static uint32_t crc;
 	static int head, buff_idx;
-	static char stream_mem[BUFFER_WIDTH][NUM_BYTES] = {0}; //buffer for an entire packet
+	static char stream_mem[BUFFER_WIDTH][NUM_BYTES] = {0}; //buffer to fit 364+64 bytes
 
 	if (!in.empty()){
 
@@ -37,30 +37,39 @@ void krnl_hash(hls::stream<pkt > &in,
 			memcpy(stream_mem[h+1],stream_mem[h], NUM_BYTES);
 		}
 		//Assign the word from the stream into memory
-		for(int j = 0; j<NUM_BYTES; j++){
+		int tmp = 0;
+		for(int j = NUM_BYTES-1; j>=0; j--){
 			#pragma HLS UNROLL
-			stream_mem[0][j] = word.data.range(j*8,j*8+7);
+			stream_mem[0][tmp++] = word.data.range(j*8,j*8+7);
 			 //everytime we get a pkt populate the stream_mem
 			#ifndef __SYNTHESIS__
-			//std::cout << "tmp = " << stream_mem[0][j] << std::endl;
+//			std::cout << "Kernel receives = " << stream_mem[0][j] << std::endl;
 			#endif
 		}
-
+		#ifndef __SYNTHESIS__
+		printf("\n");
+		for(int i = BUFFER_WIDTH-1; i>=0; i--){
+			for(int j = NUM_BYTES-1; j>=0; j--){
+				printf("%c",stream_mem[i][j]);
+			}
+//			printf("\n");
+		}
+		#endif
 
 
 		static unsigned int count = 0;
 		static uint16_t el_count = 0;
 //		static uint16_t curr_max;
 		result.data = -1; //initalize to -1, if -1/INTMAX should be counted as a none match.
-		for(head = 0; head < (NUM_BYTES); head++){
+		for(head = NUM_BYTES-1; head >= 0; head--){
 			el_count = 0;
-//			curr_max = 0;
 				// Calculate the hash value of pattern and first
 				// window of text. When head increments we move the window forward 1 Byte
 			static uint16_t idx_len;
 			for(idx_len = 0; idx_len < sizeof(lengths)/sizeof(lengths[0]); idx_len++){
 				uint16_t p_len = lengths[idx_len];
-				crc = crc_cal(crc_table, &stream_mem[0][head], p_len);
+				crc = crc_cal(crc_table, &stream_mem[BUFFER_WIDTH-1][head], p_len); //Start with the byte at max_pos then count backwards
+//				printf("crc = %x\n", crc);
 				for(k = 0; k<elements[idx_len]; k++){
 				#pragma HLS UNROLL
 					if(crc == OneDimensionHashes[el_count+k]){
@@ -71,6 +80,8 @@ void krnl_hash(hls::stream<pkt > &in,
 						#endif
 						if(count < 41){ //this is trash, must find a better solution! (insert priority encoder here. p_len can be used to prioritize
 							count++;
+//							std::cout << "kernel says " << el_count+k << std::endl;
+
 						}
 						else{
 							#ifndef __SYNTHESIS__
@@ -92,16 +103,33 @@ void krnl_hash(hls::stream<pkt > &in,
 
 
 
-uint32_t crc_cal(uint32_t* table, char* buf, size_t len) {
-	const char* p, * q;
+//uint32_t crc_cal(uint32_t* table, char* buf, size_t len) {
+//	const char* p, * q;
+//	uint32_t crc = 0;
+//	uint8_t octet;
+//	crc = ~crc;
+//	q = buf + len;
+//	for (p = buf; p < q; p++) {
+//		octet = *p;  /* Cast to unsigned octet. */
+//		crc = (crc >> 8) ^ table[(crc & 0xff) ^ octet];
+//		//printf("%" PRIX32 "\n", crc);
+//	}
+//	return ~crc;
+//}
+
+
+uint32_t crc_cal(uint32_t* table, char* buf, int len) {
 	uint32_t crc = 0;
 	uint8_t octet;
 	crc = ~crc;
-	q = buf + len;
-	for (p = buf; p < q; p++) {
-		octet = *p;  /* Cast to unsigned octet. */
+//	q = buf - len;
+	for (int i = 0; i>=-len+1; i--) {
+		octet = buf[i];  /* Cast to unsigned octet. */
+//		printf("%c",buf[i]);
 		crc = (crc >> 8) ^ table[(crc & 0xff) ^ octet];
-		//printf("%" PRIX32 "\n", crc);
 	}
 	return ~crc;
 }
+
+
+

@@ -33,7 +33,7 @@ extern "C"{
             );
 };
 
-uint32_t crc_cal(uint32_t* table, char* buf, size_t len);
+uint32_t crc_cal(uint32_t* table, char* buf, int len);
 
 #endif // __KERNEL_H__ not defined
 

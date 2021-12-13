@@ -8,7 +8,7 @@ int main()
 //   ap_uint<8> x[22*NUM_BYTES];
    uint8_t x[100000] = {0};
    uint16_t golden[1000000] = {0};
-   ap_uint<12> y[NUM_BYTES/2];
+   ap_uint<12> y[10000] = {0};
    int sz = SIZE;
    int bpb = BYTES_PER_BEAT;
 
@@ -20,14 +20,14 @@ int main()
 
    }
    fseek(fp, 0L, SEEK_END);
-   int sz_f = ftell(fp);
+   int sz_f_x = ftell(fp);
    fseek(fp, 0L, SEEK_SET);
 
-   for (i=0; i<sz_f; i++){
+   for (i=0; i<sz_f_x; i++){
 	  uint8_t tmp;
 	  fscanf(fp, "%c", &tmp);
 	  x[i] = tmp;
-	  printf("%c ", tmp);
+	  printf("%c", tmp);
    }
    fclose(fp);
 
@@ -38,15 +38,20 @@ int main()
 	   exit(1);
 
    }
-   fseek(fp, 0L, SEEK_END);
-   sz_f = ftell(fp);
-   fseek(fp, 0L, SEEK_SET);
+   int sz_f_g = 0;
+   char c;
+   for (c = getc(fp); c != EOF; c = getc(fp))
+       if (c == '\n') // Increment count if this character is newline
+    	   sz_f_g++;
    printf("\n");
-   for (i=0; i<sz_f; i++){
+
+   printf("%d\n", sz_f_g);
+   fseek(fp, 0L, SEEK_SET);
+   for (i=0; i<sz_f_g; i++){
 	  int tmp;
 	  fscanf(fp, "%d", &tmp);
 	  golden[i] = tmp & 0xffff;
-	  printf(" golden = %d\n",golden[i]);
+//	  printf(" golden = %d\n",golden[i]);
    }
    fclose(fp);
 
@@ -56,15 +61,19 @@ int main()
   
 
   int count = 0;
-
-for(int i = 0; i<100000/sz; i++){
+//  printf("sz_f_x = %d, sz = %d\n", sz_f_x, sz);
+//printf("sz_f_x/sz = %d\n", (int)ceil((float) sz_f_x/(float)sz));
+for(int i = 0; i<(int)ceil((float) sz_f_x/(float)sz); i++){
 	for (unsigned int l = 0; l < sz/bpb; l++) {
-	//      printf("writing\n");
+//	      printf("writing\n");
 	      ap_uint<512> res;
 	      for(int j=0;j<NUM_BYTES;j++)
 	      {
 	       res.range((j*8),(j*8)+7) = x[i*sz+NUM_BYTES*l+j];
+//	       cout << "TB reads " << (char) res.range((j*8),(j*8)+7) << endl;
+
 	      }
+//	      printf("\n");
 
 	      word_in.data = res;
 	      word_in.keep = -1;
@@ -77,6 +86,7 @@ for(int i = 0; i<100000/sz; i++){
 	        word_in.last = 0;
 
 	      word_in.dest = 0; //not sure if i need to set this in the tb
+
 	      in.write(word_in);
 	      krnl_hash(in,out);
 	      out.read(word_out);
@@ -94,18 +104,18 @@ for(int i = 0; i<100000/sz; i++){
 }
 
 printf("------------------------------------\n");
-  for(int i = 0; i<10; i++){
+  for(int i = 0; i<sz_f_g; i++){
 //	  cout << "y = " << y[i+1];
-	  printf(" golden = %d\n",golden[i]);
-//	 cout << "y = " << y[i+1] << "x = " << x[i] << endl;
-//	 if(y[i+1] != x[i]){
-//		 cout << "TB failed\n";
-//		 return 0;
-//	 }
+//	  printf(" golden = %d\n",golden[i]);
+	 cout << "y = " << y[i] << " golden = " << golden[i] << endl;
+	 if(y[i] != golden[i]){
+		 cout << "TB failed at count = " << i << endl;
+//		 return 1;
+	 }
   }
 
 
   printf("Reached end of tb\n");
-  return 1;
+  return 0;
 }
 
