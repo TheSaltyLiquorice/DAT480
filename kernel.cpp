@@ -9,7 +9,8 @@
 
 
 void krnl_hash(hls::stream<pkt > &in,
-	     hls::stream<pkt> &out
+		 ap_uint<NUM_BYTES*12> *out
+//	     hls::stream<pkt> &out
 		 )
 {
 #pragma HLS INTERFACE axis port=in
@@ -19,7 +20,7 @@ void krnl_hash(hls::stream<pkt > &in,
 #pragma HLS PIPELINE II=1
 
 	pkt word;
-	pkt result;
+//	pkt result;
 	int sz = SIZE;
 	int bpb = BYTES_PER_BEAT;
 	//in.read(word);
@@ -52,7 +53,7 @@ void krnl_hash(hls::stream<pkt > &in,
 			for(int j = NUM_BYTES-1; j>=0; j--){
 				printf("%c",stream_mem[i][j]);
 			}
-//			printf("\n");
+////			printf("\n");
 		}
 		#endif
 
@@ -60,7 +61,7 @@ void krnl_hash(hls::stream<pkt > &in,
 		static unsigned int count = 0;
 		static uint16_t el_count = 0;
 //		static uint16_t curr_max;
-		result.data = -1; //initalize to -1, if -1/INTMAX should be counted as a none match.
+		*out = -1; //initalize to -1, if -1/INTMAX should be counted as a none match.
 		for(head = NUM_BYTES-1; head >= 0; head--){
 			el_count = 0;
 				// Calculate the hash value of pattern and first
@@ -73,14 +74,17 @@ void krnl_hash(hls::stream<pkt > &in,
 				for(k = 0; k<elements[idx_len]; k++){
 				#pragma HLS UNROLL
 					if(crc == OneDimensionHashes[el_count+k]){
-						result.data.range(count*12,count*12+11) = el_count+k;
+//						result.data.range(count*12,count*12+11) = el_count+k;
+						out->range(count*12,count*12+11) = el_count+k;
+
 						#ifndef __SYNTHESIS__
 //						printf("kernel says idx: %d\n", el_count+k);
 //						printf("%x\n",rules[idx_len][k]);
 						#endif
-						if(count < 41){ //this is trash, must find a better solution! (insert priority encoder here. p_len can be used to prioritize
+//						count++;
+						if(count < 64){ //this is trash, must find a better solution! (insert priority encoder here. p_len can be used to prioritize
 							count++;
-//							std::cout << "kernel says " << el_count+k << std::endl;
+//							std::cout << "kernel says count = " << count << std::endl;
 
 						}
 						else{
@@ -95,28 +99,11 @@ void krnl_hash(hls::stream<pkt > &in,
 		}
 
 		count = 0;
-		out.write(result);
+//		out.write(result);
 //		}
 	}
 
 }
-
-
-
-//uint32_t crc_cal(uint32_t* table, char* buf, size_t len) {
-//	const char* p, * q;
-//	uint32_t crc = 0;
-//	uint8_t octet;
-//	crc = ~crc;
-//	q = buf + len;
-//	for (p = buf; p < q; p++) {
-//		octet = *p;  /* Cast to unsigned octet. */
-//		crc = (crc >> 8) ^ table[(crc & 0xff) ^ octet];
-//		//printf("%" PRIX32 "\n", crc);
-//	}
-//	return ~crc;
-//}
-
 
 uint32_t crc_cal(uint32_t* table, char* buf, int len) {
 	uint32_t crc = 0;

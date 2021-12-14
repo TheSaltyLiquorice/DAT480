@@ -56,10 +56,10 @@ int main()
    fclose(fp);
 
 
-  hls::stream<pkt> in, out;
+  hls::stream<pkt> in;//, out;
   pkt word_in, word_out;
   
-
+  ap_uint<768> out;
   int count = 0;
 //  printf("sz_f_x = %d, sz = %d\n", sz_f_x, sz);
 //printf("sz_f_x/sz = %d\n", (int)ceil((float) sz_f_x/(float)sz));
@@ -86,15 +86,21 @@ for(int i = 0; i<(int)ceil((float) sz_f_x/(float)sz); i++){
 	        word_in.last = 0;
 
 	      word_in.dest = 0; //not sure if i need to set this in the tb
-
+	      printf("Writing new word\n");
 	      in.write(word_in);
-	      krnl_hash(in,out);
-	      out.read(word_out);
-		for(int j=0;j<512/12;j++)
+	      krnl_hash(in,&out);
+//	      out.read(word_out);
+		for(int j=0;j<NUM_BYTES;j++)
 		{
-		ap_uint<12> result = word_out.data.range((j*12),(j*12)+11);
+		ap_uint<12> result = out.range((j*12),(j*12)+11);//word_out.data.range((j*12),(j*12)+11);
 			if(result != 4095){
 				y[count] = result;
+				cout << "Index = " << i*sz+NUM_BYTES*l+j <<endl;
+				cout << "y = " << y[count] << " golden = " << golden[count] << endl;
+
+				if(y[count] != golden[count])
+					cout << "TB failed at count = " << count << endl;
+
 				count++;
 //				cout << "Testbench receives idx = " << result << endl;
 			}
@@ -103,16 +109,16 @@ for(int i = 0; i<(int)ceil((float) sz_f_x/(float)sz); i++){
 	}
 }
 
-printf("------------------------------------\n");
-  for(int i = 0; i<sz_f_g; i++){
-//	  cout << "y = " << y[i+1];
-//	  printf(" golden = %d\n",golden[i]);
-	 cout << "y = " << y[i] << " golden = " << golden[i] << endl;
-	 if(y[i] != golden[i]){
-		 cout << "TB failed at count = " << i << endl;
-//		 return 1;
-	 }
-  }
+//printf("------------------------------------\n");
+//  for(int i = 0; i<sz_f_g; i++){
+////	  cout << "y = " << y[i+1];
+////	  printf(" golden = %d\n",golden[i]);
+//	 cout << "y = " << y[i] << " golden = " << golden[i] << endl;
+//	 if(y[i] != golden[i]){
+//		 cout << "TB failed at count = " << i << endl;
+////		 return 1;
+//	 }
+//  }
 
 
   printf("Reached end of tb\n");

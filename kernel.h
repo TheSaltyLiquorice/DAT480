@@ -29,7 +29,8 @@ typedef ap_axiu<DWIDTH, 96, 1, TDWIDTH> pkt;
 extern "C"{
 	void krnl_hash(
             hls::stream<pkt> &in,
-            hls::stream<pkt> &out
+			ap_uint<NUM_BYTES*12> *out
+//            hls::stream<pkt> &out
             );
 };
 
