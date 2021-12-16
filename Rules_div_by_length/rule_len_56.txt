@@ -1,3 +1,2 @@
-uint32_t rule_56 [] = {
 0xa86c0ba5,
-};
+0xa86c0ba5,

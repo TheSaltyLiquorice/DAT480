@@ -1,4 +1,4 @@
-uint32_t rule_103 [] = {
 0xc6357a3d,
 0x9ec1ab63,
-};
+0xc6357a3d,
+0x9ec1ab63,

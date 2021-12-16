@@ -1,3 +1,2 @@
-uint32_t rule_136 [] = {
 0xb72b18ad,
-};
+0xb72b18ad,

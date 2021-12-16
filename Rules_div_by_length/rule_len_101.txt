@@ -1,3 +1,2 @@
-uint32_t rule_101 [] = {
 0xe4aedd98,
-};
+0xe4aedd98,

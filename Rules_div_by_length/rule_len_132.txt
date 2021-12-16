@@ -1,3 +1,2 @@
-uint32_t rule_132 [] = {
 0x3ad6fad3,
-};
+0x3ad6fad3,

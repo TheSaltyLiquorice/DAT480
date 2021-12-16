@@ -1,3 +1,2 @@
-uint32_t rule_172 [] = {
 0xfed9537d,
-};
+0xfed9537d,

@@ -1,5 +1,6 @@
-uint32_t rule_89 [] = {
 0xe1c7536e,
 0x82e640cd,
 0xdbf6af9,
-};
+0xe1c7536e,
+0x82e640cd,
+0xdbf6af9,

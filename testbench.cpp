@@ -8,7 +8,7 @@ int main()
 //   ap_uint<8> x[22*NUM_BYTES];
    uint8_t x[100000] = {0};
    uint16_t golden[1000000] = {0};
-   ap_uint<12> y[10000] = {0};
+   ap_uint<9> y[10000] = {0};
    int sz = SIZE;
    int bpb = BYTES_PER_BEAT;
 
@@ -59,7 +59,7 @@ int main()
   hls::stream<pkt> in;//, out;
   pkt word_in, word_out;
   
-  ap_uint<768> out;
+  ap_uint<NUM_BYTES*8> out;
   int count = 0;
 //  printf("sz_f_x = %d, sz = %d\n", sz_f_x, sz);
 //printf("sz_f_x/sz = %d\n", (int)ceil((float) sz_f_x/(float)sz));
@@ -90,10 +90,10 @@ for(int i = 0; i<(int)ceil((float) sz_f_x/(float)sz); i++){
 	      in.write(word_in);
 	      krnl_hash(in,&out);
 //	      out.read(word_out);
-		for(int j=0;j<NUM_BYTES;j++)
+		for(int j=0;j<55;j++)
 		{
-		ap_uint<12> result = out.range((j*12),(j*12)+11);//word_out.data.range((j*12),(j*12)+11);
-			if(result != 4095){
+		ap_uint<9> result = out.range((j*9),(j*9)+8);//word_out.data.range((j*12),(j*12)+11);
+			if(result != 511){
 				y[count] = result;
 				cout << "Index = " << i*sz+NUM_BYTES*l+j <<endl;
 				cout << "y = " << y[count] << " golden = " << golden[count] << endl;
@@ -108,19 +108,6 @@ for(int i = 0; i<(int)ceil((float) sz_f_x/(float)sz); i++){
 
 	}
 }
-
-//printf("------------------------------------\n");
-//  for(int i = 0; i<sz_f_g; i++){
-////	  cout << "y = " << y[i+1];
-////	  printf(" golden = %d\n",golden[i]);
-//	 cout << "y = " << y[i] << " golden = " << golden[i] << endl;
-//	 if(y[i] != golden[i]){
-//		 cout << "TB failed at count = " << i << endl;
-////		 return 1;
-//	 }
-//  }
-
-
   printf("Reached end of tb\n");
   return 0;
 }

@@ -1,3 +1,2 @@
-uint32_t rule_78 [] = {
 0x83ef3ca1,
-};
+0x83ef3ca1,

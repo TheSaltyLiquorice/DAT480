@@ -1,4 +1,4 @@
-uint32_t rule_57 [] = {
 0xfbac23f1,
 0xfa077126,
-};
+0xfbac23f1,
+0xfa077126,

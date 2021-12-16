@@ -1,3 +1,2 @@
-uint32_t rule_162 [] = {
 0x6f10ed1c,
-};
+0x6f10ed1c,

@@ -1,4 +1,4 @@
-uint32_t rule_88 [] = {
 0x972ce038,
 0xc0ca6ecb,
-};
+0x972ce038,
+0xc0ca6ecb,

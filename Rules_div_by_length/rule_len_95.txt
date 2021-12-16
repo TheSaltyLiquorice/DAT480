@@ -1,3 +1,2 @@
-uint32_t rule_95 [] = {
 0xf3cac7d8,
-};
+0xf3cac7d8,

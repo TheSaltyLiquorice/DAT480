@@ -1,3 +1,2 @@
-uint32_t rule_151 [] = {
 0x9edac920,
-};
+0x9edac920,

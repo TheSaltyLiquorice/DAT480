@@ -1,4 +1,4 @@
-uint32_t rule_58 [] = {
 0x3efea37b,
 0x1e1c0c7f,
-};
+0x3efea37b,
+0x1e1c0c7f,

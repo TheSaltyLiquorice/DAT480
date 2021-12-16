@@ -1,5 +1,6 @@
-uint32_t rule_67 [] = {
 0x8b217ae0,
 0xbf41b2a4,
 0x6bbd9084,
-};
+0x8b217ae0,
+0xbf41b2a4,
+0x6bbd9084,
