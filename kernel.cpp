@@ -49,31 +49,38 @@ void krnl_hash(hls::stream<pkt > &in,
 			#endif
 		}
 		#ifndef __SYNTHESIS__
-		printf("\n");
-		for(int i = BUFFER_WIDTH-1; i>=0; i--){
-			for(int j = NUM_BYTES-1; j>=0; j--){
-				printf("%c",stream_mem[i][j]);
-			}
-////
-		}
-		printf("\n");
+//		printf("\n");
+//		for(int i = BUFFER_WIDTH-1; i>=0; i--){
+//			for(int j = NUM_BYTES-1; j>=0; j--){
+//				printf("%c",stream_mem[i][j]);
+//			}
+//////
+//		}
+//		printf("\n");
 		#endif
 
 
 		static unsigned int count = 0;
 		static uint16_t el_count = 0;
+		static uint16_t curr_max_idx = 0;
+		static uint16_t curr_idx = 0;
+		static uint8_t curr_max_len = 0;
+		static uint8_t match = 0;
+
+
 //		static uint16_t curr_max;
 		*out = -1; //initalize to -1, if -1/INTMAX should be counted as a none match.
 		for(head = NUM_BYTES-1; head >= 0; head--){
+			#pragma HLS UNROLL factor = 4
 			el_count = 0;
 				// Calculate the hash value of pattern and first
 				// window of text. When head increments we move the window forward 1 Byte
-
-
-			static uint8_t curr_max_len = 0;
-			static uint16_t curr_max_idx = 0;
-
+			match = 0; //initalize match to 0, meaning match, change if there isn't a match
+			curr_max_len = 0;
+			curr_max_idx = 0;
 			for(uint16_t idx_len = 0; idx_len < sizeof(lengths)/sizeof(lengths[0]); idx_len++){
+				#pragma HLS UNROLL
+
 				const uint16_t p_len = lengths[idx_len];
 				uint32_t crc = 0xFFFFFFFF;
 				uint8_t octet;
@@ -82,89 +89,71 @@ void krnl_hash(hls::stream<pkt > &in,
 					crc = (crc >> 8) ^ crc_table[(crc & 0xff) ^ octet];
 				}
 				crc = ~crc;
-//				printf("crc = %x\n",crc); //continue from here tomorrow
 				for(uint16_t k = 0; k<elements[idx_len]; k++){
 
-				#pragma HLS UNROLL
 					if(crc == rules[el_count+k]){ //do hashes match? Then save the idx and the length for which this was found
-						printf("CRC MATCH\n");
+//						printf("head = %d, curr_max_idx = %d, el_count+k = %d\n",head,curr_max_idx,el_count+k);
 						if(curr_max_idx < el_count+k){
-							curr_max_len = idx_len;
+							curr_max_len = lengths[idx_len];
 							curr_max_idx = el_count+k;
+							curr_idx = k;
+//							printf("Index updates, head = %d, len = %d, k = %d\n",head,idx_len,k);
 						}
 					}
 				}
 				el_count += elements[idx_len];
 			}
-//			match here
-//			printf("Curr_max_idx = %d\n", curr_max_idx);
-			uint8_t match = -1;
 			switch (curr_max_len) {
 				case 4:
 					for(int i = 0; i<4; i++){
-						if(stream_mem[BUFFER_WIDTH-1][head-i] != str_rules[curr_max_idx][i]){
+						if(stream_mem[BUFFER_WIDTH-1][head-i] != str_rules_4[curr_idx][i]){
 							match = 1;
 						}
 					}
-
-					match = 0;
 					break;
 				case 5:
 					for(int i = 0; i<5; i++){
-						if(stream_mem[BUFFER_WIDTH-1][head-i] != str_rules[curr_max_idx][i]){
+						if(stream_mem[BUFFER_WIDTH-1][head-i] != str_rules_5[curr_idx][i]){
 							match = 1;
 						}
 					}
-
-					match = 0;
 					break;
 				case 6:
 					for(int i = 0; i<6; i++){
-						if(stream_mem[BUFFER_WIDTH-1][head-i] != str_rules[curr_max_idx][i]){
+						if(stream_mem[BUFFER_WIDTH-1][head-i] != str_rules_6[curr_idx][i]){
 							match = 1;
 						}
 					}
-
-					match = 0;
 					break;
 				case 7:
 					for(int i = 0; i<7; i++){
-						if(stream_mem[BUFFER_WIDTH-1][head-i] != str_rules[curr_max_idx][i]){
+						if(stream_mem[BUFFER_WIDTH-1][head-i] != str_rules_7[curr_idx][i]){
 							match = 1;
 						}
 					}
-
-					match = 0;
 					break;
 				case 8:
 					for(int i = 0; i<8; i++){
-						if(stream_mem[BUFFER_WIDTH-1][head-i] != str_rules[curr_max_idx][i]){
+						if(stream_mem[BUFFER_WIDTH-1][head-i] != str_rules_8[curr_idx][i]){
 							match = 1;
 						}
 					}
-
-					match = 0;
 					break;
 				default:
 					continue;
 			}
 			if(match == 0 && count < 55){
+//				printf("Kernel says match at %d\n",curr_max_idx);
 				out->range(count*9,count*9+8) = curr_max_idx;
 				count++;
+			#ifndef __synthesis__
+				printf("Found full match\n");
+			#endif
+
 			}
 		}
 		count = 0;
 	}
 
 }
-
-//int fun_strncmp_4(char ref1 [4], const char ref2[4]){
-//	int result = 0xFFFFFFFF;
-//	for(int i = 0; i<4; i++){
-//		if(ref1[i] != ref2[i]){
-//			return 1;
-//		}
-//	}
-//	return 0;
-//}
 
