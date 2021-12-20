@@ -6,7 +6,7 @@ int main()
 {
    FILE *fp;
 //   ap_uint<8> x[22*NUM_BYTES];
-   uint8_t x[100000] = {0};
+   uint8_t x[100000] = {0}; //beware of limited memory
    uint16_t golden[1000000] = {0};
    ap_uint<9> y[10000] = {0};
    int sz = SIZE;
@@ -61,8 +61,6 @@ int main()
   
   ap_uint<NUM_BYTES*8> out;
   int count = 0;
-//  printf("sz_f_x = %d, sz = %d\n", sz_f_x, sz);
-//printf("sz_f_x/sz = %d\n", (int)ceil((float) sz_f_x/(float)sz));
 for(int i = 0; i<(int)ceil((float) sz_f_x/(float)sz); i++){
 	for (unsigned int l = 0; l < sz/bpb; l++) {
 //	      printf("writing\n");
@@ -89,10 +87,10 @@ for(int i = 0; i<(int)ceil((float) sz_f_x/(float)sz); i++){
 	      in.write(word_in);
 	      krnl_hash(in,&out);
 //	      out.read(word_out);
-		for(int j=0;j<55;j++)
+		for(int j=0;j<41;j++)
 		{
-		ap_uint<9> result = out.range((j*9),(j*9)+8);//word_out.data.range((j*12),(j*12)+11);
-			if(result != 511){
+		ap_uint<12> result = out.range((j*12),(j*12)+11);//word_out.data.range((j*12),(j*12)+11);
+			if(result != 4095){ //not a match, skip check.
 				y[count] = result;
 				cout << "Index = " << i*sz+NUM_BYTES*l+j ;
 				cout << ": y = " << y[count] << " golden = " << golden[count] << endl;
@@ -103,7 +101,6 @@ for(int i = 0; i<(int)ceil((float) sz_f_x/(float)sz); i++){
 				}
 
 				count++;
-//				cout << "Testbench receives idx = " << result << endl;
 			}
 		}
 
