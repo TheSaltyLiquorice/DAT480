@@ -86,7 +86,6 @@ for(int i = 0; i<(int)ceil((float) sz_f_x/(float)sz); i++){
 	        word_in.last = 0;
 
 	      word_in.dest = 0; //not sure if i need to set this in the tb
-	      printf("Writing new word\n");
 	      in.write(word_in);
 	      krnl_hash(in,&out);
 //	      out.read(word_out);
@@ -95,11 +94,13 @@ for(int i = 0; i<(int)ceil((float) sz_f_x/(float)sz); i++){
 		ap_uint<9> result = out.range((j*9),(j*9)+8);//word_out.data.range((j*12),(j*12)+11);
 			if(result != 511){
 				y[count] = result;
-				cout << "Index = " << i*sz+NUM_BYTES*l+j <<endl;
-				cout << "y = " << y[count] << " golden = " << golden[count] << endl;
+				cout << "Index = " << i*sz+NUM_BYTES*l+j ;
+				cout << ": y = " << y[count] << " golden = " << golden[count] << endl;
 
-				if(y[count] != golden[count])
+				if(y[count] != golden[count]){
 					cout << "TB failed at count = " << count << endl;
+					return 1;
+				}
 
 				count++;
 //				cout << "Testbench receives idx = " << result << endl;
