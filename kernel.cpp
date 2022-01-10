@@ -9,7 +9,7 @@
 
 
 
-void krnl_hash(hls::stream<pkt > &in,
+void krnl_s2mm(hls::stream<pkt > &in,
 		 ap_uint<NUM_BYTES*8> *out
 		 )
 {
@@ -46,7 +46,7 @@ void krnl_hash(hls::stream<pkt > &in,
 
 		*out = -1; //initalize to -1, if -1/INTMAX should be counted as a none match.
 		for(head = NUM_BYTES-1; head >= 0; head--){
-			#pragma HLS UNROLL factor = 2
+			#pragma HLS UNROLL factor = 8 //here the multibyte parallellism is derived
 			el_count = 0; //the hash array is linear, this variable is used to keep track of how many elements we've encountered per length
 			match = 0; //initalize match to 0, meaning match, change if there isn't a match
 			curr_max_len = 0; //priority variables
@@ -72,7 +72,7 @@ void krnl_hash(hls::stream<pkt > &in,
 				el_count += elements[idx_len]; //linear hash array, keep track of how many total elements we've gone through
 			}
 			//MACRO expansion of the auto generated switch, we needed to put the strings of every length into its own variable and we can't do variable substitution with a for loop, therefore
-			// this has to be generated outside the c code. The switch is used for the full byte wise comparison between the input string and the pattern.
+			// this has to be generated outside the C code. The switch is used for the full byte wise comparison between the input string and the pattern.
 			LONG_SWITCH
 
 			if(match == 0 && count < 41){ //we can only fit 42 matches when using a 12 bit result

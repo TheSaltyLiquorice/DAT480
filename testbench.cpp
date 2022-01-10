@@ -85,19 +85,19 @@ for(int i = 0; i<(int)ceil((float) sz_f_x/(float)sz); i++){
 
 	      word_in.dest = 0; //not sure if i need to set this in the tb
 	      in.write(word_in);
-	      krnl_hash(in,&out);
+	      krnl_s2mm(in,&out);
 //	      out.read(word_out);
 		for(int j=0;j<41;j++)
 		{
 		ap_uint<12> result = out.range((j*12),(j*12)+11);//word_out.data.range((j*12),(j*12)+11);
 			if(result != 4095){ //not a match, skip check.
 				y[count] = result;
-				cout << "Index = " << i*sz+NUM_BYTES*l+j ;
+				cout << "Count = " << count ;
 				cout << ": y = " << y[count] << " golden = " << golden[count] << endl;
 
 				if(y[count] != golden[count]){
 					cout << "TB failed at count = " << count << endl;
-					return 1;
+					return 1; //return 1 to indicate fail
 				}
 
 				count++;
